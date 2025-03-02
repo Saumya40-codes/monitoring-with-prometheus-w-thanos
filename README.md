@@ -2,6 +2,8 @@ A simple example of instrumenting go app using prometheus and then configuring T
 
 ---
 
+## Getting familiar with prometheus
+
 To run prometheus
 
 ```
@@ -30,9 +32,9 @@ This is a constant value. For example, the sum of all the values of a metric in 
 That was it about what we can do with these metrics 😅. Usually, Thanos comes into picture with good enough amount of metrics and multiple (>1) prometheus cluster scraping the metrics.
 
 Next, for configuring thanos we need some HA prometheus setup + some good amount of metric. So I'll be using [this](https://github.com/thanos-io/thanos/blob/main/tutorials/interactive-example/README.md)
+We can run the test and it fill generate the required tsdb data for you 
 
-
-So, now below I'll just document how things are turning out to be when setting up interactive thanos setup wrt to that.
+So, now below I'll just document how things are turning out to be when setting up the thanos setup with Docker wrt to that.
 
 ---
 
@@ -45,31 +47,14 @@ This is can be the GRPC endpoint that is being exposed by any of the thanos comp
 2. Tracing
 
 In all of the thanos components, we have specified a `--tracing.config` so we will be better be able to see the trace of a request with Jaeger
+ able to do the query task from sidecar, storage gateway based on the promql queries received
 
-### 1. Creating Minio object store
+---
 
-Firstly, prometheus initially collects the metrics and aggregates most of them in memory and WAL (I just read this, have very less idea about what this will be mean) and then compacts block down to disk. Now based on that file in above link, there exists two such storage blocks, which will be stored in 2 seperate buckets in Minio
+Please refer to `/configs` folder for all the configuration that will be used here
 
-### 2. Setting up jaeger
+Now, we can create two prometheus container for our HA setup + one Prometheus (short-term) container which scrapes the metrics from their own setup endpoint
 
-With jaeger we can see how our the whole trace of our request lifecycle. we can specify it with `--tracing.config` flag which values point to jaeger configuration
+With this we can attach one Thanos sidecar to each of them (though, in this case its not exactly sidecar but in the end our sidecar will be able to expose a storeAPI endpoint for querier to query)
 
-### 3. Thanos Storage Gateways
-
-Storage Gateway, as name suggests acts like a gateway which has idea about the tsdb blocks data stored in our minio object storage, thus querying our "old" tsdb block data
-
-
-### 4. Prometheus+Thanos sidecars
-
-- Creating two prometheus cluster in HA setup (replicas scraping same metrics)
-- One prometheus cluster (short term)
-- Thanos running with prometheus in each of this seperate cluster
-
-
-### Querier
-
-Now querier with the help of storeAPI now will be able to do the query task from sidecar, storage gateway based on the promql queries received
-
-
-![image](https://github.com/user-attachments/assets/e877eca6-460e-4ef7-8374-62884e41cee8)
-
+Further, we setup Thanos querier by providing the storAPI GRPC endpoint of sidecar to it via `--store` flag
