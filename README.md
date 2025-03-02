@@ -44,11 +44,6 @@ So, now below I'll just document how things are turning out to be when setting u
 
 This is can be the GRPC endpoint that is being exposed by any of the thanos components (Storage Gateway, Sidecar, etc)
 
-2. Tracing
-
-In all of the thanos components, we have specified a `--tracing.config` so we will be better be able to see the trace of a request with Jaeger
- able to do the query task from sidecar, storage gateway based on the promql queries received
-
 ---
 
 Please refer to `/configs` folder for all the configuration that will be used here
@@ -57,4 +52,11 @@ Now, we can create two prometheus container for our HA setup + one Prometheus (s
 
 With this we can attach one Thanos sidecar to each of them (though, in this case its not exactly sidecar but in the end our sidecar will be able to expose a storeAPI endpoint for querier to query)
 
-Further, we setup Thanos querier by providing the storAPI GRPC endpoint of sidecar to it via `--store` flag
+Further, we setup Thanos querier by providing the storeAPI GRPC endpoint of sidecar to it via `--store` flag
+
+At the end we have a setup which is something like below
+
+Prometheus API <- Thanos Sidecar -> Object Storage <- Storage Gateway
+
+![image](https://github.com/user-attachments/assets/c293497c-1971-4131-9818-56a18537df88)
+
