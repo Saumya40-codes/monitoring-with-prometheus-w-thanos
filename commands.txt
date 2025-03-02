@@ -6,6 +6,9 @@ docker run -d --rm -p 9090:9090 --network thanos \
     quay.io/prometheus/prometheus:v2.38.0 \
     --config.file=/etc/prometheus/prometheus.yml \
     --storage.tsdb.path=/prometheus \
+    --storage.tsdb.retention.time=10d \
+    --storage.tsdb.max-block-duration=2h \
+    --storage.tsdb.min-block-duration=2h \
     --web.enable-lifecycle \
     --web.enable-admin-api
 
@@ -16,6 +19,9 @@ docker run -d --rm -p 9091:9091 --network thanos \
     --name prometheus-1-apsouth1 \
     quay.io/prometheus/prometheus:v2.38.0 \
     --config.file=/etc/prometheus/prometheus.yml \
+    --storage.tsdb.retention.time=10d \
+    --storage.tsdb.max-block-duration=2h \
+    --storage.tsdb.min-block-duration=2h \
     --web.listen-address=0.0.0.0:9091 \
     --storage.tsdb.path=/prometheus \
     --web.enable-lifecycle \
@@ -48,7 +54,6 @@ docker run -d --name jaeger --network thanos \
 
 docker run -d --rm -p 19090:19090 --network thanos \
     -v /home/saumyacodes/towards-prometheus/configs/prometheus1.yml:/etc/prometheus/prometheus.yml \
-    -v /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/thanos/tracing.yaml \
     --name sidecar-2 \
     -u root \
     quay.io/thanos/thanos:v0.28.0 \
@@ -56,13 +61,12 @@ docker run -d --rm -p 19090:19090 --network thanos \
     --http-address 0.0.0.0:19090 \
     --grpc-address 0.0.0.0:19190 \
     --reloader.config-file /etc/prometheus/prometheus.yml \
-    --prometheus.url http://prometheus-0-apsouth2:9092 \
-    --tracing.config-file /etc/thanos/tracing.yaml
+    --prometheus.url http://prometheus-0-apsouth2:9092 
 
 docker run -d --rm -p 19091:19091 --network thanos \
     -v /home/saumyacodes/towards-prometheus/configs/prometheus01.yml:/etc/prometheus/prometheus.yml \
     -v /home/saumyacodes/towards-prometheus/data/prom10:/prometheus \
-    -v /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/thanos/tracing.yaml \
+    -v /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml \
     --name sidecar-0 \
     -u root \
     quay.io/thanos/thanos:v0.28.0 \
@@ -70,14 +74,15 @@ docker run -d --rm -p 19091:19091 --network thanos \
     --http-address 0.0.0.0:19091 \
     --grpc-address 0.0.0.0:19191 \
     --reloader.config-file /etc/prometheus/prometheus.yml \
-    --prometheus.url http://prometheus-0-apsouth1:9090 \
-    --tracing.config-file /etc/thanos/tracing.yaml
+    --objstore.config-file /etc/thanos/minio-bucket.yaml \
+    --shipper.upload-compacted \
+    --tsdb.path /prometheus \
+    --prometheus.url http://prometheus-0-apsouth1:9090 
 
 
 docker run -d --rm -p 19092:19092 --network thanos \
     -v /home/saumyacodes/towards-prometheus/configs/prometheus02.yml:/etc/prometheus/prometheus.yml \
-    -v /home/saumyacodes/towards-prometheus/data/prom10:/prometheus \
-    -v /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/thanos/tracing.yaml \
+    -v /home/saumyacodes/towards-prometheus/data/prom1:/prometheus \
     --name sidecar-1 \
     -u root \
     quay.io/thanos/thanos:v0.28.0 \
@@ -86,17 +91,40 @@ docker run -d --rm -p 19092:19092 --network thanos \
     --grpc-address 0.0.0.0:19192 \
     --reloader.config-file /etc/prometheus/prometheus.yml \
     --prometheus.url http://prometheus-1-apsouth1:9091 \
-    --tracing.config-file /etc/thanos/tracing.yaml
 
 docker run -p 29090:29090 -d --network thanos \
     -v /home/saumyacodes/towards-prometheus/data/prom10:/prometheus \
-    -v /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/thanos/tracing.yaml \
     --name querier \
     quay.io/thanos/thanos:v0.28.0 \
     query \
     --http-address 0.0.0.0:29090 \
     --query.replica-label replica \
-    --tracing.config-file /etc/thanos/tracing.yaml
+    --store store:19194 \
     --store sidecar-2:19190 \
     --store sidecar-0:19191 \
     --store sidecar-1:19192 && echo "Started Thanos Querier"
+
+docker run -d --rm --name minio \
+     -v /home/saumyacodes/towards-prometheus/data/minio/:/data \
+     -p 9000:9000 -e "MINIO_ACCESS_KEY=minio" -e "MINIO_SECRET_KEY=yayyayyay" \
+     minio/minio:RELEASE.2019-01-31T00-31-19Z \
+     server /data
+
+docker run -d --network thanos -p 19094:19094 \
+    -v /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml \
+    --name store-gateway \
+    quay.io/thanos/thanos:v0.28.0 \
+    store \
+    --objstore.config-file /etc/thanos/minio-bucket.yaml \
+    --http-address 0.0.0.0:19094 \
+    --grpc-address 0.0.0.0:19194
+
+docker run -d --network thanos -p 19095:19095 --rm \
+ -v /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml \
+    --name thanos-compact \
+    quay.io/thanos/thanos:v0.28.0 \
+    compact \
+    --wait --wait-interval 30s \
+    --consistency-delay 0s \
+    --objstore.config-file /etc/thanos/minio-bucket.yaml \
+    --http-address 0.0.0.0:19095
