@@ -1,6 +1,37 @@
 type: JAEGER
 config:
   service_name: "thanos"
-  sampler_type: "const"
-  sampler_param: 1
-  endpoint: "http://jaeger-collector:14268/api/traces"
+  disabled: false 
+  rpc_metrics: false  
+  
+  sampler_type: "const"  
+  sampler_param: 1  
+  sampler_manager_host_port: ""  
+  sampler_max_operations: 0  
+  sampler_refresh_interval: 5s
+  
+  sampler_parent_config:
+    local_parent_sampled: true  
+    remote_parent_sampled: true  
+
+  sampling_server_url: ""
+  
+  operation_name_late_binding: false
+  
+  initial_sampler_rate: 1 
+  
+  reporter_max_queue_size: 100  
+  reporter_flush_interval: 5s  
+  reporter_log_spans: false  
+  reporter_disable_attempt_reconnecting: false
+  reporter_attempt_reconnect_interval: 5s 
+  
+  endpoint: "http://jaeger:14268/api/traces"
+  user: ""  
+  password: ""
+  
+  agent_host: "jaeger"  
+  agent_port: 6831
+  
+  traceid_128bit: true
+
