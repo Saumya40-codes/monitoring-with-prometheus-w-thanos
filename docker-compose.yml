@@ -93,6 +93,7 @@ services:
       - /home/saumyacodes/towards-prometheus/configs/prometheus01.yml:/etc/prometheus/prometheus.yml
       - /home/saumyacodes/towards-prometheus/data/prom10:/prometheus
       - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - sidecar
       - --http-address=0.0.0.0:19091
@@ -102,6 +103,7 @@ services:
       - --shipper.upload-compacted
       - --tsdb.path=/prometheus
       - --prometheus.url=http://prometheus-0-apsouth1:9090
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - prometheus-0-apsouth1
 
@@ -116,12 +118,14 @@ services:
     volumes:
       - /home/saumyacodes/towards-prometheus/configs/prometheus02.yml:/etc/prometheus/prometheus.yml
       - /home/saumyacodes/towards-prometheus/data/prom1:/prometheus
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - sidecar
       - --http-address=0.0.0.0:19092
       - --grpc-address=0.0.0.0:19192
       - --reloader.config-file=/etc/prometheus/prometheus.yml
       - --prometheus.url=http://prometheus-1-apsouth1:9091
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - prometheus-1-apsouth1
 
@@ -135,12 +139,14 @@ services:
       - "19090:19090"
     volumes:
       - /home/saumyacodes/towards-prometheus/configs/prometheus1.yml:/etc/prometheus/prometheus.yml
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml  
     command:
       - sidecar
       - --http-address=0.0.0.0:19090
       - --grpc-address=0.0.0.0:19190
       - --reloader.config-file=/etc/prometheus/prometheus.yml
       - --prometheus.url=http://prometheus-0-apsouth2:9092
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - prometheus-0-apsouth2
 
@@ -153,6 +159,7 @@ services:
       - "29090:29090"
     volumes:
       - /home/saumyacodes/towards-prometheus/data/prom10:/prometheus
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - query
       - --http-address=0.0.0.0:29090
@@ -161,6 +168,7 @@ services:
       - --endpoint=sidecar-2:19190
       - --endpoint=sidecar-0:19191
       - --endpoint=sidecar-1:19192
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - sidecar-0
       - sidecar-1
@@ -192,11 +200,13 @@ services:
       - "19094:19094"
     volumes:
       - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - store
       - --objstore.config-file=/etc/thanos/minio-bucket.yaml
       - --http-address=0.0.0.0:19094
       - --grpc-address=0.0.0.0:19194
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - minio
 
@@ -210,6 +220,7 @@ services:
       - "19095:19095"
     volumes:
       - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - compact
       - --wait
@@ -217,5 +228,6 @@ services:
       - --consistency-delay=0s
       - --objstore.config-file=/etc/thanos/minio-bucket.yaml
       - --http-address=0.0.0.0:19095
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - minio
