@@ -14,8 +14,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus01.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/data/prom1:/prometheus
+      - ./configs/prometheus01.yml:/etc/prometheus/prometheus.yml
+      - ./data/prom1:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -34,8 +34,8 @@ services:
     ports:
       - "9091:9091"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus02.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/data/prom10:/prometheus
+      - ./configs/prometheus02.yml:/etc/prometheus/prometheus.yml
+      - ./data/prom10:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=10d
@@ -55,8 +55,8 @@ services:
     ports:
       - "9092:9092"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus1.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/data/prom2:/prometheus
+      - ./configs/prometheus1.yml:/etc/prometheus/prometheus.yml
+      - ./data/prom2:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.listen-address=0.0.0.0:9092
@@ -90,10 +90,10 @@ services:
     ports:
       - "19091:19091"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus01.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/data/prom10:/prometheus
-      - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./configs/prometheus01.yml:/etc/prometheus/prometheus.yml
+      - ./data/prom10:/prometheus
+      - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - sidecar
       - --http-address=0.0.0.0:19091
@@ -116,9 +116,9 @@ services:
     ports:
       - "19092:19092"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus02.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/data/prom1:/prometheus
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./configs/prometheus02.yml:/etc/prometheus/prometheus.yml
+      - ./data/prom1:/prometheus
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - sidecar
       - --http-address=0.0.0.0:19092
@@ -138,8 +138,8 @@ services:
     ports:
       - "19090:19090"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/prometheus1.yml:/etc/prometheus/prometheus.yml
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml  
+      - ./configs/prometheus1.yml:/etc/prometheus/prometheus.yml
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml  
     command:
       - sidecar
       - --http-address=0.0.0.0:19090
@@ -158,8 +158,8 @@ services:
     ports:
       - "29090:29090"
     volumes:
-      - /home/saumyacodes/towards-prometheus/data/prom10:/prometheus
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./data/prom10:/prometheus
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - query
       - --http-address=0.0.0.0:29090
@@ -184,7 +184,7 @@ services:
       - "9000:9000"
       - "44575:44575"
     volumes:
-      - /home/saumyacodes/towards-prometheus/data/minio/:/data
+      - ./data/minio/:/data
     environment:
       - MINIO_ROOT_USER=minio
       - MINIO_ROOT_PASSWORD=yayyayyay
@@ -199,8 +199,8 @@ services:
     ports:
       - "19094:19094"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - store
       - --objstore.config-file=/etc/thanos/minio-bucket.yaml
@@ -219,8 +219,8 @@ services:
     ports:
       - "19095:19095"
     volumes:
-      - /home/saumyacodes/towards-prometheus/configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
-      - /home/saumyacodes/towards-prometheus/configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - compact
       - --wait
