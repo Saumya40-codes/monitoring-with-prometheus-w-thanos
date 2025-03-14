@@ -16,6 +16,8 @@ services:
     volumes:
       - ./configs/prometheus01.yml:/etc/prometheus/prometheus.yml
       - ./data/prom1:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -24,6 +26,7 @@ services:
       - --storage.tsdb.min-block-duration=2h
       - --web.enable-lifecycle
       - --web.enable-admin-api
+      - --enable-feature=native-histograms
 
   prometheus-1-apsouth1:
     image: prom/prometheus:latest
@@ -36,6 +39,8 @@ services:
     volumes:
       - ./configs/prometheus02.yml:/etc/prometheus/prometheus.yml
       - ./data/prom10:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=10d
@@ -45,6 +50,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
       - --web.enable-admin-api
+      - --enable-feature=native-histograms
 
   prometheus-0-apsouth2:
     image: prom/prometheus:latest
@@ -82,7 +88,7 @@ services:
       - COLLECTOR_ZIPKIN_HTTP_PORT=9411
 
   sidecar-0:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: sidecar-0
     user: root
     networks:
@@ -108,7 +114,7 @@ services:
       - prometheus-0-apsouth1
 
   sidecar-1:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: sidecar-1
     user: root
     networks:
@@ -130,7 +136,7 @@ services:
       - prometheus-1-apsouth1
 
   sidecar-2:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: sidecar-2
     user: root
     networks:
@@ -151,7 +157,7 @@ services:
       - prometheus-0-apsouth2
 
   querier:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: querier
     networks:
       - thanos
@@ -191,7 +197,7 @@ services:
     command: server --console-address "0.0.0.0:44575" /data
 
   store-gateway:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: store-gateway
     user: root
     networks:
@@ -211,7 +217,7 @@ services:
       - minio
 
   thanos-compact:
-    image: thanosio/thanos:main-2025-03-03-c69f112
+    image: thanos:latest
     container_name: thanos-compact
     user: root
     networks:

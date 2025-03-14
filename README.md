@@ -34,6 +34,23 @@ That was it about what we can do with these metrics 😅. Usually, Thanos comes 
 Next, for configuring thanos we need some HA prometheus setup + some good amount of metric. So I'll be using [this](https://github.com/thanos-io/thanos/blob/main/tutorials/interactive-example/README.md)
 We can run the test and it fill generate the required tsdb data for you 
 
+- Doing `make docker` (this will be building thanos executable and also its docker image)
+- Running the test (this will be running the test and generating the tsdb data)
+- After this, a data dir will be created in the root of the project which will have the tsdb data'
+- In that make sure to create a copy of prom1 and name it prom01 within the same directory
+
+## Running the thanos setup
+
+```
+go run main.go # this will start the prometheus server, (just additional metrics, like histograms and native histograms)
+```
+
+```
+docker compose up
+```
+
+
+
 So, now below I'll just document how things are turning out to be when setting up the thanos setup with Docker wrt to that.
 
 ---
