@@ -143,7 +143,7 @@ func main() {
 	http.HandleFunc("/", handleRequest)
 	http.Handle("/metrics", promHandler)
 
-	go http.ListenAndServe("127.0.0.1:8080", nil)
+	go http.ListenAndServe("0.0.0.0:8080", nil)
 
 	time.Sleep(5 * time.Second)
 
