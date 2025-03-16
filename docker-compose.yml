@@ -69,6 +69,8 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
       - --web.enable-admin-api
+    depends_on:
+      - thanos-receive
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -174,12 +176,14 @@ services:
       - --endpoint=sidecar-2:19190
       - --endpoint=sidecar-0:19191
       - --endpoint=sidecar-1:19192
+      - --endpoint=thanos-receive:10907
       - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - sidecar-0
       - sidecar-1
       - sidecar-2
       - store-gateway
+      - thanos-receive
 
   minio:
     image: minio/minio:RELEASE.2025-02-28T09-55-16Z
@@ -235,5 +239,33 @@ services:
       - --objstore.config-file=/etc/thanos/minio-bucket.yaml
       - --http-address=0.0.0.0:19095
       - --tracing.config-file=/etc/tracing/jaeger.yaml
+    depends_on:
+      - minio
+
+  thanos-receive:
+    image: thanos:latest
+    container_name: thanos-receive
+    user: root
+    networks:
+      - thanos
+    ports:
+      - "10907:10907"
+      - "10909:10909"
+      - "10908:10908"
+    volumes:
+      - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
+      - ./configs/hashrings.json:/etc/thanos/hashrings.json
+    command:
+      - receive
+      - --grpc-address=0.0.0.0:10907
+      - --http-address=0.0.0.0:10909
+      - --objstore.config-file=/etc/thanos/minio-bucket.yaml
+      - --receive.replication-factor=1
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
+      - --label=receive_replica="0"
+      - --label=receive_cluster="ap-south1"
+      - --remote-write.address=0.0.0.0:10908
+      - --receive.hashrings-file=/etc/thanos/hashrings.json
     depends_on:
       - minio

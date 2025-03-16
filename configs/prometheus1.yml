@@ -12,4 +12,8 @@ scrape_configs:
    - job_name: 'sidecar'
      static_configs:
       - targets: ['sidecar-2:19090']
-
+   - job_name: 'receiver'
+     static_configs:
+      - targets: ['thanos-receive:10908']
+remote_write:
+   - url: "http://thanos-receive:10908/api/v1/receive"
