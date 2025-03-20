@@ -27,6 +27,7 @@ services:
       - --web.enable-lifecycle
       - --web.enable-admin-api
       - --enable-feature=native-histograms
+      - --enable-feature=promql-experimental-functions
 
   prometheus-1-apsouth1:
     image: prom/prometheus:latest
@@ -51,6 +52,7 @@ services:
       - --web.enable-lifecycle
       - --web.enable-admin-api
       - --enable-feature=native-histograms
+      - --enable-feature=promql-experimental-functions
 
   prometheus-0-apsouth2:
     image: prom/prometheus:latest
@@ -69,6 +71,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
       - --web.enable-admin-api
+      - --enable-feature=promql-experimental-functions
     depends_on:
       - thanos-receive
 
