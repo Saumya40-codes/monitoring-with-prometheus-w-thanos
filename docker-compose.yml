@@ -25,10 +25,10 @@ services:
       - --storage.tsdb.max-block-duration=2h
       - --storage.tsdb.min-block-duration=2h
       - --web.enable-lifecycle
-      - --web.enable-admin-api
+      - --web.enable-admin-api 
       - --enable-feature=native-histograms
       - --enable-feature=promql-experimental-functions
-
+      
   prometheus-1-apsouth1:
     image: prom/prometheus:latest
     container_name: prometheus-1-apsouth1
@@ -71,6 +71,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
       - --web.enable-admin-api
+      - --enable-feature=native-histograms
       - --enable-feature=promql-experimental-functions
     depends_on:
       - thanos-receive
@@ -161,32 +162,74 @@ services:
     depends_on:
       - prometheus-0-apsouth2
 
-  querier:
+  querier-1:
     image: thanos:latest
-    container_name: querier
+    container_name: querier-1
     networks:
       - thanos
     ports:
-      - "29090:29090"
+      - "29091:29091"
+      - "29093:29093"
     volumes:
       - ./data/prom10:/prometheus
       - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
     command:
       - query
-      - --http-address=0.0.0.0:29090
+      - --http-address=0.0.0.0:29091
+      - --grpc-address=0.0.0.0:29093
       - --query.replica-label=replica
       - --endpoint=store:19194
       - --endpoint=sidecar-2:19190
       - --endpoint=sidecar-0:19191
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
+    depends_on:
+      - sidecar-0
+      - sidecar-2
+      - store-gateway
+
+  querier-2:
+    image: thanos:latest
+    container_name: querier-2
+    networks:
+      - thanos
+    ports:
+      - "29092:29092"
+      - "29094:29094"
+    volumes:
+      - ./data/prom10:/prometheus
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
+    command:
+      - query
+      - --http-address=0.0.0.0:29092
+      - --grpc-address=0.0.0.0:29094
+      - --query.replica-label=replica
       - --endpoint=sidecar-1:19192
       - --endpoint=thanos-receive:10907
       - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
-      - sidecar-0
       - sidecar-1
-      - sidecar-2
-      - store-gateway
       - thanos-receive
+
+  querier-main:
+    image: thanos:latest
+    container_name: querier-main
+    networks:
+      - thanos
+    ports:
+      - "29090:29090"
+    volumes:
+      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
+    command:
+      - query
+      - --http-address=0.0.0.0:29090
+      - --query.replica-label=replica
+      - --endpoint=querier-1:29093
+      - --endpoint=querier-2:29094
+      - --tracing.config-file=/etc/tracing/jaeger.yaml
+      - --query.mode=distributed
+    depends_on:
+      - querier-1
+      - querier-2
 
   minio:
     image: minio/minio:RELEASE.2025-02-28T09-55-16Z
