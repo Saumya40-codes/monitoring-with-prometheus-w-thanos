@@ -8,7 +8,7 @@ global:
 scrape_configs:
    - job_name: 'prometheus'
      static_configs:
-      - targets: ['prometheus-0-apsouth1:9090', 'prometheus-1-apsouth1:9091', 'host.docker.internal:8080']
+      - targets: ['prometheus-0-apsouth1:9090', 'prometheus-1-apsouth1:9091', 'host.docker.internal:8080', 'host.docker.internal:9374']  # last one is additional (cc: https://github.com/SuperQ/smokeping_prober :)
    - job_name: 'sidecar'
      static_configs:
       - targets: ['sidecar-0:19091', 'sidecar-1:19092']
