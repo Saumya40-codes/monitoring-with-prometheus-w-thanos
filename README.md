@@ -2,6 +2,18 @@ A simple example of instrumenting go app using prometheus and then configuring T
 
 ---
 
+## (Very)Quickstart
+
+1. 
+```
+go run main.go
+```
+
+2.
+```
+docker compose up -d
+```
+
 ## Getting familiar with prometheus
 
 To run prometheus
