@@ -28,6 +28,8 @@ services:
       - --web.enable-admin-api 
       - --enable-feature=native-histograms
       - --enable-feature=promql-experimental-functions
+    depends_on:
+      - prometheus-1-apsouth1
       
   prometheus-1-apsouth1:
     image: prom/prometheus:latest
@@ -73,8 +75,6 @@ services:
       - --web.enable-admin-api
       - --enable-feature=native-histograms
       - --enable-feature=promql-experimental-functions
-    depends_on:
-      - thanos-receive
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -181,7 +181,7 @@ services:
       - --endpoint=store:19194
       - --endpoint=sidecar-2:19190
       - --endpoint=sidecar-0:19191
-      - --tracing.config-file=/etc/tracing/jaeger.yaml
+      - --tracing.config-file=/etc/tracing/jaeger.yaml 
     depends_on:
       - sidecar-0
       - sidecar-2
@@ -208,7 +208,6 @@ services:
       - --tracing.config-file=/etc/tracing/jaeger.yaml
     depends_on:
       - sidecar-1
-      - thanos-receive
 
   querier-main:
     image: thanos:latest
@@ -288,30 +287,19 @@ services:
     depends_on:
       - minio
 
-  thanos-receive:
+  thanos-query-frontend:
     image: thanos:latest
-    container_name: thanos-receive
+    container_name: thanos-query-frontend
     user: root
     networks:
       - thanos
     ports:
-      - "10907:10907"
-      - "10909:10909"
-      - "10908:10908"
-    volumes:
-      - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
-      - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
-      - ./configs/hashrings.json:/etc/thanos/hashrings.json
+      - "29089:29089"
     command:
-      - receive
-      - --grpc-address=0.0.0.0:10907
-      - --http-address=0.0.0.0:10909
-      - --objstore.config-file=/etc/thanos/minio-bucket.yaml
-      - --receive.replication-factor=1
-      - --tracing.config-file=/etc/tracing/jaeger.yaml
-      - --label=receive_replica="0"
-      - --label=receive_cluster="ap-south1"
-      - --remote-write.address=0.0.0.0:10908
-      - --receive.hashrings-file=/etc/thanos/hashrings.json
+      - query-frontend
+      - --http-address=0.0.0.0:29089
+      - --query-frontend.downstream-url=http://querier-main:29090
+      - --query-range.split-interval=5m
+      - --query-frontend.vertical-shards=4
     depends_on:
-      - minio
+      - querier-main

@@ -14,7 +14,7 @@ scrape_configs:
       - targets: ['sidecar-0:19091', 'sidecar-1:19092']
    - job_name: 'querier'
      static_configs:
-      - targets: ['query:29090']
+      - targets: ['querier-1:29091', 'querier-2:29092']
    - job_name: 'store'
      static_configs:
       - targets: ['store:19094']
