@@ -17,7 +17,7 @@ scrape_configs:
       - targets: ['querier-1:29091', 'querier-2:29092']
    - job_name: 'store'
      static_configs:
-      - targets: ['store:19094']
+      - targets: ['store-gateway:19094']
    - job_name: 'compact'
      static_configs:
-      - targets: ['compact:19095']
+      - targets: ['thanos-compact:19095']
