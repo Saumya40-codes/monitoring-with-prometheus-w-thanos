@@ -1,6 +1,6 @@
 [
   {
-    "endpoints": ["0.0.0.0:10908"]
+    "endpoints": ["thanos-receive:10907"]
   }
 ]
 

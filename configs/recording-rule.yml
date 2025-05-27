@@ -1,0 +1,7 @@
+groups:
+  - name: top-active-session-limits
+    interval: 1m
+    rules:
+      - record: top2_instances_active_session
+        expr: topk(2, instances_active_session)
+

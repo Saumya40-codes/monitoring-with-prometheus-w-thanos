@@ -15,6 +15,7 @@ services:
       - "9090:9090"
     volumes:
       - ./configs/prometheus01.yml:/etc/prometheus/prometheus.yml
+      - ./configs/recording-rule.yml:/etc/prometheus/recording-rule.yml
       - ./data/prom1:/prometheus
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -103,6 +104,7 @@ services:
       - "19091:19091"
     volumes:
       - ./configs/prometheus01.yml:/etc/prometheus/prometheus.yml
+      - ./configs/recording-rule.yml:/etc/prometheus/recording-rule.yml
       - ./data/prom10:/prometheus
       - ./configs/bucket_storage.yml:/etc/thanos/minio-bucket.yaml
       - ./configs/jaeger.yml:/etc/tracing/jaeger.yaml
@@ -182,6 +184,7 @@ services:
       - --endpoint=sidecar-2:19190
       - --endpoint=sidecar-0:19191
       - --tracing.config-file=/etc/tracing/jaeger.yaml 
+      - --enable-feature=promql-experimental-functions
     depends_on:
       - sidecar-0
       - sidecar-2
@@ -206,6 +209,7 @@ services:
       - --endpoint=sidecar-1:19192
       - --endpoint=thanos-receive:10907
       - --tracing.config-file=/etc/tracing/jaeger.yaml
+      - --enable-feature=promql-experimental-functions
     depends_on:
       - sidecar-1
 
@@ -226,6 +230,7 @@ services:
       - --endpoint=querier-2:29094
       - --tracing.config-file=/etc/tracing/jaeger.yaml
       - --query.mode=distributed
+      - --enable-feature=promql-experimental-functions
     depends_on:
       - querier-1
       - querier-2
@@ -301,5 +306,26 @@ services:
       - --query-frontend.downstream-url=http://querier-main:29090
       - --query-range.split-interval=5m
       - --query-frontend.vertical-shards=4
+      - --enable-feature=promql-experimental-functions
     depends_on:
       - querier-main
+
+  thanos-rule:
+    image: thanos:latest
+    container_name: thanos-rule
+    user: root
+    networks:
+      - thanos
+    ports:
+      - "10902:10902"
+    volumes:
+      - ./configs/recording-rule.yml:/etc/prometheus/recording-rule.yml
+    command:
+      - rule
+      - --eval-interval=1m
+      - --rule-file=/etc/prometheus/recording-rule.yml
+      - --alert.query-url=http://0.0.0.0:9090
+      - --http-address=0.0.0.0:10902
+      - --query=0.0.0.0:29091
+      - --query=0.0.0.0:29092
+      - --enable-feature=promql-experimental-functions

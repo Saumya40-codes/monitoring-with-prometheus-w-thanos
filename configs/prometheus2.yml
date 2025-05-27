@@ -1,0 +1,12 @@
+global:
+   scrape_interval: 40s
+   external_labels:
+     cluster: us-west1
+
+scrape_configs:
+   - job_name: 'prometheus'
+     static_configs:
+      - targets: ['prometheus-0-us-west1:9093']
+
+remote_write:
+  - url: "http://thanos-receive:10908/api/v1/receive"

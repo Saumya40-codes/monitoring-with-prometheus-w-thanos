@@ -5,6 +5,9 @@ global:
      cluster: ap-south1
      replica: 0
 
+rule_files:
+  - "recording-rule.yml"
+
 scrape_configs:
    - job_name: 'prometheus'
      static_configs:
