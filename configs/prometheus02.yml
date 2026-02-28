@@ -1,6 +1,7 @@
 global:
    scrape_interval: 15s
    evaluation_interval: 15s
+   scrape_native_histograms: true
    external_labels:
      cluster: ap-south1
      replica: 1
@@ -21,3 +22,4 @@ scrape_configs:
    - job_name: 'compact'
      static_configs:
       - targets: ['thanos-compact:19095']
+  scrape_native_histograms: true
